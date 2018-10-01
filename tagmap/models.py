@@ -13,9 +13,6 @@ class Tag(BaseModel):
     name = CharField(unique=True)
     description = CharField(null=True)
 
-    def get_all():
-        return Tag.select()
-
     def get_items(self):
         return (Item
                 .select()
@@ -29,9 +26,6 @@ class Tag(BaseModel):
 class Item(BaseModel):
     text = CharField()
     description = CharField(null=True)
-
-    def get_all():
-        return Item.select()
 
     def get_tags(self):
         return (Tag

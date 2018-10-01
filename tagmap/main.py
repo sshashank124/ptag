@@ -1,5 +1,5 @@
-from models import Tag, Item
 from models import db, create_tables
+from query import Query
 
 
 def main():
@@ -10,13 +10,10 @@ def main():
     # init --------
 
     # main ++++++++
-    for tag in Tag.get_all():
-        print(tag, list(tag.get_items()))
-
-    print()
-
-    for item in Item.get_all():
-        print(item, list(item.get_tags()))
+    q = Query()
+    if q.parse(input("Query: ")):
+        print(q.expr)
+        print(q.execute())
     # main --------
 
     # exit ++++++++
