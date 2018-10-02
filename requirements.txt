@@ -1,0 +1,2 @@
+boolean.py==3.6
+peewee==3.7.0
