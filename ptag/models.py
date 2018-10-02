@@ -1,7 +1,7 @@
 from peewee import SqliteDatabase, Model, CharField, ForeignKeyField
 
 
-db = SqliteDatabase('tagmap.db', pragmas={'foreign_keys': 1})
+db = SqliteDatabase('ptag.db', pragmas={'foreign_keys': 1})
 
 
 class BaseModel(Model):

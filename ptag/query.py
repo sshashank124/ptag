@@ -33,6 +33,7 @@ parser = b.BooleanAlgebra(AND_class=AND_SQL,
 
 class Query():
     def parse(self, query_str: str) -> bool:
+        # throw various errors for various problems
         try:
             self.expr = parser.parse(query_str)
             tags = [s.obj for s in self.expr.symbols]
