@@ -1,24 +1,15 @@
 from models import db, create_tables
-from query import Query
+from ui import tui
 
 
 def main():
-    # init ++++++++
-    # models
     create_tables()
     db.connect()
-    # init --------
 
-    # main ++++++++
-    q = Query()
-    if q.parse(input("Query: ")):
-        print(q.expr)
-        print(q.execute())
-    # main --------
+    # main
+    tui.run()
 
-    # exit ++++++++
     db.close()
-    # exit --------
 
 
 if __name__ == '__main__':

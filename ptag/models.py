@@ -20,7 +20,7 @@ class Tag(BaseModel):
                 .where(TagItemJoin.tag == self))
 
     def __str__(self):
-        return 'Tag({})'.format(self.name)
+        return self.name
 
 
 class Item(BaseModel):
@@ -34,7 +34,7 @@ class Item(BaseModel):
                 .where(TagItemJoin.item == self))
 
     def __str__(self):
-        return 'Item({})'.format(self.text)
+        return self.text
 
 
 class TagItemJoin(BaseModel):
