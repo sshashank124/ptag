@@ -1,7 +1,7 @@
 import boolean as b
 from peewee import SQL
 
-from models import Tag, Item, TagItemJoin
+from .models import Tag, Item, TagItemJoin
 
 
 class Tags:

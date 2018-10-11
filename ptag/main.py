@@ -1,4 +1,4 @@
-from models import db, create_tables
+from data.models import db, create_tables
 from ui import tui
 
 

@@ -1,32 +1,40 @@
-import curses
-import time
+import urwid
 
 
-def main(stdscr):
-    # Make stdscr.getch non-blocking
-    stdscr.nodelay(True)
-    stdscr.clear()
-    width = 4
-    count = 0
-    direction = 1
-    while True:
-        c = stdscr.getch()
-        # Clear out anything else the user has typed in
-        curses.flushinp()
-        stdscr.clear()
-        # If the user presses p, increase the width of the springy bar
-        if c == ord('p'):
-            width += 1
-        # Draw a springy bar
-        stdscr.addstr("#" * count)
-        count += direction
-        if count == width:
-            direction = -1
-        elif count == 0:
-            direction = 1
-        # Wait 1/10 of a second. Read below to learn about how to avoid
-        # problems with using time.sleep with getch!
-        time.sleep(0.1)
+class FocusableText(urwid.Text):
+    _selectable = True
+
+    def keypress(self, _, key):
+        return key
 
 
-curses.wrapper(main)
+palette = [('header', 'white', 'black'),
+           ('reveal focus', 'black', 'dark cyan', 'standout')]
+
+items = [FocusableText("foo"),
+         FocusableText("bar"),
+         FocusableText("baz")]
+
+content = urwid.SimpleListWalker([
+    urwid.AttrMap(w, None, 'reveal focus') for w in items])
+
+listbox = urwid.ListBox(content)
+
+show_key = urwid.Text("Press any key", wrap='clip')
+head = urwid.AttrMap(show_key, 'header')
+top = urwid.Frame(listbox, head)
+
+
+def exit_on_cr(input):
+    if input in ('q', 'Q'):
+        raise urwid.ExitMainLoop()
+
+
+def out(s):
+    show_key.set_text(str(s))
+
+
+loop = urwid.MainLoop(top,
+                      palette,
+                      unhandled_input=exit_on_cr)
+loop.run()
