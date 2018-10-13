@@ -1,5 +1,5 @@
 from data.models import db, create_tables
-from ui import tui
+from ui.tui_urwid import ui
 
 
 def main():
@@ -7,7 +7,7 @@ def main():
     db.connect()
 
     # main
-    tui.run()
+    ui.run()
 
     db.close()
 
