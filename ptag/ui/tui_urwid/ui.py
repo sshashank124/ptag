@@ -45,9 +45,7 @@ class SearchableListFragment(uw.WidgetWrap):
         if key == '/':
             self.enter_search()
         elif key == 'enter':
-            focus_item = self.list_view.focus
-            if focus_item is not None:
-                uw.emit_signal(self, SIGNAL_SUBMIT, focus_item.data)
+            self.list_item_selected()
         else:
             return key
 
@@ -62,11 +60,13 @@ class SearchableListFragment(uw.WidgetWrap):
             self.pile.contents.pop()
             self.mode = self.Mode.NORMAL
 
+    def list_item_selected(self):
+        focus_item = self.list_view.focus
+        if focus_item is not None:
+            uw.emit_signal(self, SIGNAL_SUBMIT, focus_item.data)
+
     def filter_list(self, filter_str):
         raise NotImplementedError()
-
-    def list_item_selected(self):  # TODO: arg for tag_id or index from list
-        pass
 
 
 class TagsFragment(SearchableListFragment):
@@ -81,7 +81,7 @@ class TagsFragment(SearchableListFragment):
 class ItemsFragment(SearchableListFragment):
     def __init__(self):
         items = Items.get_all()
-        super().__init__('Items', items, 'expr: ')
+        super().__init__('Items', items, 'expr> ')
 
     def filter_list(self, filter_str):
         pass

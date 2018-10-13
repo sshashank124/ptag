@@ -6,12 +6,12 @@ from .models import Tag, Item, TagItemJoin
 
 class Tags:
     def get_all():
-        return list(Tag.select())
+        return Tag.select()
 
 
 class Items:
     def get_all():
-        return list(Item.select())
+        return Item.select()
 
 
 class Query:

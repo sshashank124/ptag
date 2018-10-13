@@ -4,8 +4,9 @@ import urwid as uw
 SIGNAL_SUBMIT = 'signal_submit'
 SIGNAL_CANCEL = 'signal_cancel'
 
-COMMAND_CURSOR_CLEAR_LEFT = 'cursor clear left'
-COMMAND_CURSOR_CLEAR_RIGHT = 'cursor clear right'
+CMD_CLR_LINE_LEFT = 'clear_line_left'
+CMD_CLR_LINE_RIGHT = 'clear_line_right'
+CMD_CLR_CHAR_RIGHT = 'clear_char_right'
 
 
 class SelectableText(uw.Text):
@@ -26,17 +27,23 @@ class PEdit(uw.WidgetWrap):
             c['ctrl e'] = uw.CURSOR_MAX_RIGHT
             c['ctrl b'] = uw.CURSOR_LEFT
             c['ctrl f'] = uw.CURSOR_RIGHT
-            c['ctrl u'] = COMMAND_CURSOR_CLEAR_LEFT
-            c['ctrl k'] = COMMAND_CURSOR_CLEAR_RIGHT
+            c['ctrl u'] = CMD_CLR_LINE_LEFT
+            c['ctrl k'] = CMD_CLR_LINE_RIGHT
+            c['ctrl d'] = CMD_CLR_CHAR_RIGHT
             self._command_map = c
 
         def keypress(self, size, key):
             key = super().keypress(size, key)
-            if self._command_map[key] == COMMAND_CURSOR_CLEAR_LEFT:
-                self.edit_text = self.edit_text[self.edit_pos:]
+            i = self.edit_pos
+            # line
+            if self._command_map[key] == CMD_CLR_LINE_LEFT:
+                self.edit_text = self.edit_text[i:]
                 self.edit_pos = 0
-            elif self._command_map[key] == COMMAND_CURSOR_CLEAR_RIGHT:
-                self.edit_text = self.edit_text[:self.edit_pos]
+            elif self._command_map[key] == CMD_CLR_LINE_RIGHT:
+                self.edit_text = self.edit_text[:i]
+            # char
+            elif self._command_map[key] == CMD_CLR_CHAR_RIGHT:
+                self.edit_text = self.edit_text[:i] + self.edit_text[i+1:]
             else:
                 return key
 
@@ -62,6 +69,8 @@ class PEdit(uw.WidgetWrap):
             uw.emit_signal(self, SIGNAL_SUBMIT, self.text)
         elif key == 'esc':
             self.text = ''
+            uw.emit_signal(self, SIGNAL_CANCEL)
+        elif key in ('backspace', 'delete') and not self.text:
             uw.emit_signal(self, SIGNAL_CANCEL)
         else:
             return key
