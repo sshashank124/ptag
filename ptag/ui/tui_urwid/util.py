@@ -6,6 +6,7 @@ SIGNAL_CANCEL = 'signal_cancel'
 
 CMD_CLR_LINE_LEFT = 'clear_line_left'
 CMD_CLR_LINE_RIGHT = 'clear_line_right'
+CMD_CLR_WORD_LEFT = 'clear_word_left'
 CMD_CLR_CHAR_RIGHT = 'clear_char_right'
 
 
@@ -29,21 +30,28 @@ class PEdit(uw.WidgetWrap):
             c['ctrl f'] = uw.CURSOR_RIGHT
             c['ctrl u'] = CMD_CLR_LINE_LEFT
             c['ctrl k'] = CMD_CLR_LINE_RIGHT
+            c['ctrl w'] = CMD_CLR_WORD_LEFT
             c['ctrl d'] = CMD_CLR_CHAR_RIGHT
             self._command_map = c
 
         def keypress(self, size, key):
             key = super().keypress(size, key)
             i = self.edit_pos
+            t = self.edit_text
             # line
             if self._command_map[key] == CMD_CLR_LINE_LEFT:
-                self.edit_text = self.edit_text[i:]
+                self.edit_text = t[i:]
                 self.edit_pos = 0
             elif self._command_map[key] == CMD_CLR_LINE_RIGHT:
-                self.edit_text = self.edit_text[:i]
+                self.edit_text = t[:i]
+            # word
+            elif self._command_map[key] == CMD_CLR_WORD_LEFT:
+                cut_idx = t[:i].rstrip().rfind(' ') + 1
+                self.edit_text = t[:cut_idx] + t[i:]
+                self.edit_pos = cut_idx
             # char
             elif self._command_map[key] == CMD_CLR_CHAR_RIGHT:
-                self.edit_text = self.edit_text[:i] + self.edit_text[i+1:]
+                self.edit_text = t[:i] + t[i+1:]
             else:
                 return key
 
