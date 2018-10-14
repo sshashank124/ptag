@@ -1,13 +1,9 @@
 import urwid as uw
 
-
-SIGNAL_SUBMIT = 'signal_submit'
-SIGNAL_CANCEL = 'signal_cancel'
-
-CMD_CLR_LINE_LEFT = 'clear_line_left'
-CMD_CLR_LINE_RIGHT = 'clear_line_right'
-CMD_CLR_WORD_LEFT = 'clear_word_left'
-CMD_CLR_CHAR_RIGHT = 'clear_char_right'
+from .constants import (C_SUBMIT, C_CANCEL,
+                        C_TXT_LINE_CLR_L, C_TXT_LINE_CLR_R,
+                        C_TXT_WORD_CLR_L,
+                        C_TXT_CHAR_CLR_R)
 
 
 class SelectableText(uw.Text):
@@ -28,10 +24,10 @@ class PEdit(uw.WidgetWrap):
             c['ctrl e'] = uw.CURSOR_MAX_RIGHT
             c['ctrl b'] = uw.CURSOR_LEFT
             c['ctrl f'] = uw.CURSOR_RIGHT
-            c['ctrl u'] = CMD_CLR_LINE_LEFT
-            c['ctrl k'] = CMD_CLR_LINE_RIGHT
-            c['ctrl w'] = CMD_CLR_WORD_LEFT
-            c['ctrl d'] = CMD_CLR_CHAR_RIGHT
+            c['ctrl u'] = C_TXT_LINE_CLR_L
+            c['ctrl k'] = C_TXT_LINE_CLR_R
+            c['ctrl w'] = C_TXT_WORD_CLR_L
+            c['ctrl d'] = C_TXT_CHAR_CLR_R
             self._command_map = c
 
         def keypress(self, size, key):
@@ -39,18 +35,18 @@ class PEdit(uw.WidgetWrap):
             i = self.edit_pos
             t = self.edit_text
             # line
-            if self._command_map[key] == CMD_CLR_LINE_LEFT:
+            if self._command_map[key] == C_TXT_LINE_CLR_L:
                 self.edit_text = t[i:]
                 self.edit_pos = 0
-            elif self._command_map[key] == CMD_CLR_LINE_RIGHT:
+            elif self._command_map[key] == C_TXT_LINE_CLR_R:
                 self.edit_text = t[:i]
             # word
-            elif self._command_map[key] == CMD_CLR_WORD_LEFT:
+            elif self._command_map[key] == C_TXT_WORD_CLR_L:
                 cut_idx = t[:i].rstrip().rfind(' ') + 1
                 self.edit_text = t[:cut_idx] + t[i:]
                 self.edit_pos = cut_idx
             # char
-            elif self._command_map[key] == CMD_CLR_CHAR_RIGHT:
+            elif self._command_map[key] == C_TXT_CHAR_CLR_R:
                 self.edit_text = t[:i] + t[i+1:]
             else:
                 return key
@@ -60,8 +56,8 @@ class PEdit(uw.WidgetWrap):
         super().__init__(uw.AttrMap(self.edit_view, 'highlight'))
 
         uw.register_signal(self.__class__,
-                           [SIGNAL_SUBMIT,
-                            SIGNAL_CANCEL])
+                           [C_SUBMIT,
+                            C_CANCEL])
 
     @property
     def text(self):
@@ -70,16 +66,15 @@ class PEdit(uw.WidgetWrap):
     @text.setter
     def text(self, value):
         self.edit_view.edit_text = value
+        self.edit_view.edit_pos = len(value)
 
     def keypress(self, size, key):
         key = super().keypress(size, key)
-        if key == 'enter':
-            uw.emit_signal(self, SIGNAL_SUBMIT, self.text)
-        elif key == 'esc':
-            self.text = ''
-            uw.emit_signal(self, SIGNAL_CANCEL)
-        elif key in ('backspace', 'delete') and not self.text:
-            uw.emit_signal(self, SIGNAL_CANCEL)
+        if self._command_map[key] == C_SUBMIT:
+            uw.emit_signal(self, C_SUBMIT, self.text)
+        elif (self._command_map[key] == C_CANCEL) or \
+             (key in ('backspace', 'delete') and not self.text):
+            uw.emit_signal(self, C_CANCEL)
         else:
             return key
 
@@ -99,6 +94,8 @@ class PListBox(uw.ListBox):
         c['G'] = uw.CURSOR_MAX_RIGHT
         c['ctrl b'] = uw.CURSOR_PAGE_UP
         c['ctrl f'] = uw.CURSOR_PAGE_DOWN
+        c['ctrl u'] = uw.CURSOR_PAGE_UP
+        c['ctrl d'] = uw.CURSOR_PAGE_DOWN
         self._command_map = c
 
 

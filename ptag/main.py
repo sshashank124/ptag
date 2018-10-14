@@ -1,5 +1,5 @@
 from data.models import db, create_tables
-from ui.tui_urwid import ui
+from ui.tui_urwid.app import App
 
 
 def main():
@@ -7,7 +7,8 @@ def main():
     db.connect()
 
     # main
-    ui.run()
+    app = App()
+    app.run()
 
     db.close()
 
