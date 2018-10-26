@@ -1,21 +1,29 @@
-import urwid as uw
+import urwid
 
 # GENERAL
-C_SUBMIT = uw.ACTIVATE
-C_CANCEL = 'cancel'
-C_SEARCH = 'search'
-C_MESSAGE = 'message'
+SUBMIT = urwid.ACTIVATE
+CANCEL = 'cancel'
+SEARCH = 'search'
+REFRESH = 'refresh'
+MESSAGE = 'message'
 
 # MESSAGES
-C_MSG_DURATION = 2
-C_MSG_LVL_INFO = 'info'
-C_MSG_LVL_WARN = 'warn'
-C_MSG_LVL_ERROR = 'error'
+MSG_DURATION = 2
+MSG_LVL_INFO = 'info'
+MSG_LVL_WARN = 'warn'
+MSG_LVL_ERROR = 'error'
 
 # EDIT
-C_TXT_LINE_CLR_L = 'text_line_clear_left'
-C_TXT_LINE_CLR_R = 'text_line_clear_right'
+TXT_LINE_CLR_L = 'text_line_clear_left'
+TXT_LINE_CLR_R = 'text_line_clear_right'
+TXT_WORD_CLR_L = 'text_word_clear_left'
+TXT_CHAR_CLR_R = 'text_char_clear_right'
 
-C_TXT_WORD_CLR_L = 'text_word_clear_left'
+# MODIFY
+ITEM_EDIT = 'item_edit'
+ITEM_ADD = 'item_add'
+ITEM_DEL = 'item_delete'
 
-C_TXT_CHAR_CLR_R = 'text_char_clear_right'
+# PALETTE
+PLT_HIGHLIGHT = 'highlight'
+PLT_INTERACT = 'interact'

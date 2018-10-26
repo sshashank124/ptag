@@ -1,17 +1,17 @@
-from peewee import SqliteDatabase, Model, CharField, ForeignKeyField
+import peewee
 
 
-db = SqliteDatabase('ptag.db', pragmas={'foreign_keys': 1})
+db = peewee.SqliteDatabase('ptag.db', pragmas={'foreign_keys': 1})
 
 
-class BaseModel(Model):
+class BaseModel(peewee.Model):
     class Meta:
         database = db
 
 
 class Tag(BaseModel):
-    name = CharField(unique=True)
-    description = CharField(null=True)
+    name = peewee.CharField(unique=True)
+    description = peewee.CharField(null=True)
 
     def get_items(self):
         return (Item
@@ -27,8 +27,8 @@ class Tag(BaseModel):
 
 
 class Item(BaseModel):
-    text = CharField()
-    description = CharField(null=True)
+    text = peewee.CharField()
+    description = peewee.CharField(null=True)
 
     def get_tags(self):
         return (Tag
@@ -41,8 +41,8 @@ class Item(BaseModel):
 
 
 class TagItemJoin(BaseModel):
-    tag = ForeignKeyField(Tag, backref='items')
-    item = ForeignKeyField(Item, backref='tags')
+    tag = peewee.ForeignKeyField(Tag, backref='items')
+    item = peewee.ForeignKeyField(Item, backref='tags')
 
     class Meta:
         indexes = ((('tag', 'item'), True),)
