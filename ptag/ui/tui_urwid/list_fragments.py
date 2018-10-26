@@ -1,34 +1,30 @@
-import enum
 import urwid
 
-from .constants import C_SUBMIT, C_CANCEL, C_SEARCH
+from .constants import C_SUBMIT, C_CANCEL, C_SEARCH, C_MESSAGE
+from .constants import C_MSG_LVL_WARN
 from data.dao import Tags, Items
 from .utils import PEdit, PListBox, HDivider
 
 
 class _FilterableListFragment(urwid.WidgetWrap):
-    class Mode(enum.Enum):
-        NORMAL = 0
-        SEARCH = 1
-        FILTERED = 2
-
     def __init__(self,
                  title,
                  search_caption):
         # HEADER
-        title_text = urwid.Text(title)
+        self.title = title
+        self.title_text = urwid.Text(self.title)
 
         # LIST VIEW
         self.list_walker = urwid.SimpleFocusListWalker([])
         self.list_view = PListBox(self.list_walker)
-        self.load_data()
+        self.set_data(self.default_list_data)
 
         # SEARCH BOX
         self.search_view = PEdit(search_caption)
         urwid.connect_signal(self.search_view, C_SUBMIT, self.filter_list)
         urwid.connect_signal(self.search_view, C_CANCEL, self.exit_search)
 
-        self.mode = self.Mode.NORMAL
+        self.filtered = False
 
         # COMMANDS
         c = self._command_map.copy()
@@ -36,10 +32,10 @@ class _FilterableListFragment(urwid.WidgetWrap):
         self._command_map = c
 
         # SIGNALS
-        urwid.register_signal(self.__class__, [C_SUBMIT])
+        urwid.register_signal(self.__class__, [C_SUBMIT, C_MESSAGE])
 
         # MAIN VIEW
-        self.pile = urwid.Pile([(urwid.PACK, title_text),
+        self.pile = urwid.Pile([(urwid.PACK, self.title_text),
                                 (urwid.PACK, HDivider()),
                                 self.list_view])
         super().__init__(self.pile)
@@ -55,27 +51,42 @@ class _FilterableListFragment(urwid.WidgetWrap):
         else:
             return key
 
+    def set_search_visible(self, visible):
+        if visible:
+            if not self.search_view.visible:
+                self.pile.contents.append((self.search_view,
+                                           (urwid.PACK, None)))
+            self.pile.focus_position = len(self.pile.contents) - 1
+        elif not visible:
+            if self.search_view.visible:
+                self.pile.contents.pop()
+        self.search_view.visible = visible
+
+    def set_filtered(self, filtered):
+        if filtered:
+            if not self.filtered:
+                self.title_text.set_text(self.title + ' [*]')
+        elif not filtered:
+            if self.filtered:
+                self.title_text.set_text(self.title)
+        self.filtered = filtered
+
     def enter_search(self, text=None):
-        if self.mode == self.Mode.NORMAL:
-            self.pile.contents.append((self.search_view, (urwid.PACK, None)))
-            self.mode = self.Mode.SEARCH
-        self.pile.focus_position = len(self.pile.contents) - 1
+        self.set_search_visible(True)
         if text is not None:
             self.search_view.text = text
 
     def exit_search(self):
-        if self.mode != self.Mode.NORMAL:
-            self.pile.contents.pop()
-            self.search_view.text = ''
-            self.mode = self.Mode.NORMAL
+        self.set_search_visible(False)
 
     def exit_filter(self):
-        if self.mode == self.Mode.FILTERED:
+        if self.filtered:
+            self.set_filtered(False)
             self.exit_search()
-            self.load_data()
+            self.set_data(self.default_list_data)
 
-    def load_data(self):
-        raise NotImplementedError()
+    def set_data(self, data):
+        self.list_walker[:] = PListBox.to_entries(data)
 
     def list_item_selected(self):
         focus_item = self.list_view.focus
@@ -88,29 +99,34 @@ class _FilterableListFragment(urwid.WidgetWrap):
 
 class TagsFragment(_FilterableListFragment):
     def __init__(self):
-        super().__init__('Tags', '/')
+        self.default_list_data = list(Tags.get_all())
+        super().__init__('TAGS', '/')
 
     def filter_list(self, filter_str):
-        pass  # TODO: search submission
-
-    def load_data(self):
-        self.list_walker[:] = [PListBox.Entry(tag) for tag in Tags.get_all()]
+        if filter_str:
+            self.set_filtered(True)
+            filtered_list_data = filter(lambda d: d.contains_i(filter_str),
+                                        self.default_list_data)
+            self.set_data(filtered_list_data)
+        else:
+            self.exit_filter()
 
 
 class ItemsFragment(_FilterableListFragment):
     def __init__(self):
-        super().__init__('Items', 'expr> ')
+        self.default_list_data = []
+        super().__init__('ITEMS', 'expr> ')
 
     def filter_list(self, filter_str):
-        if self.mode == self.Mode.NORMAL:
-            return
-
-        items = Items.query(filter_str)
-        if items:
-            self.mode = self.Mode.FILTERED
-            # TODO
+        if filter_str:
+            items = Items.query(filter_str)
+            if items:
+                self.set_filtered(True)
+                self.set_data(items)
+            else:
+                urwid.emit_signal(self,
+                                  C_MESSAGE,
+                                  C_MSG_LVL_WARN,
+                                  'Invalid Query')
         else:
-            pass  # TODO: notify failed: perhaps add a universal status bar
-
-    def load_data(self):
-        pass  # TODO
+            self.exit_filter()

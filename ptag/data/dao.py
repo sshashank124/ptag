@@ -10,6 +10,8 @@ class Tags:
 
 
 class Items:
+    GLOB_ALL_FILTER = ('*', 'all')
+
     class Query:
         class AND_SQL(boolean.AND):
             def __str__(self):
@@ -33,8 +35,6 @@ class Items:
                                         Symbol_class=Symbol_SQL)
 
         def parse(self, query_str):
-            # throw various errors for various problems
-            # for more specific debugging
             try:
                 self.expr = Items.Query.parser.parse(query_str)
                 tags = [s.obj for s in self.expr.symbols]
@@ -44,7 +44,6 @@ class Items:
                 return False
 
         def execute(self):
-            # handle default case: SELECT * from item
             if self.expr is None:
                 return None
 
@@ -65,7 +64,10 @@ class Items:
     q = Query()
 
     def query(query_str):
-        if Items.q.parse(query_str):
-            return Items.q.execute()
+        if query_str.lower() not in Items.GLOB_ALL_FILTER:
+            if Items.q.parse(query_str):
+                return Items.q.execute()
+            else:
+                return None
         else:
-            return None
+            return Items.get_all()

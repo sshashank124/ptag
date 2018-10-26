@@ -22,6 +22,9 @@ class Tag(BaseModel):
     def __str__(self):
         return self.name
 
+    def contains_i(self, s):
+        return s.lower() in self.__str__().lower()
+
 
 class Item(BaseModel):
     text = CharField()

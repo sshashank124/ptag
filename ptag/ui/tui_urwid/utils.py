@@ -14,6 +14,12 @@ class SelectableText(uw.Text):
         return key
 
 
+class ContextText(uw.Text):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.visible = False
+
+
 class PEdit(uw.WidgetWrap):
     class _Edit(uw.Edit):
         def __init__(self, caption):
@@ -53,6 +59,7 @@ class PEdit(uw.WidgetWrap):
 
     def __init__(self, search_caption):
         self.edit_view = PEdit._Edit(caption=search_caption)
+        self.visible = False
         super().__init__(uw.AttrMap(self.edit_view, 'highlight'))
 
         uw.register_signal(self.__class__,
@@ -98,12 +105,15 @@ class PListBox(uw.ListBox):
         c['ctrl d'] = uw.CURSOR_PAGE_DOWN
         self._command_map = c
 
+    def to_entries(data):
+        return [PListBox.Entry(d) for d in data]
+
 
 class VDivider(uw.SolidFill):
-    def __init__(self):
-        super().__init__(u'│')
+    def __init__(self, fill_char=u'│'):
+        super().__init__(fill_char)
 
 
 class HDivider(uw.Divider):
-    def __init__(self):
-        super().__init__(u'─')
+    def __init__(self, fill_char=u'─'):
+        super().__init__(fill_char)
